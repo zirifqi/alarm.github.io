@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Web Alarm</title>
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <style>
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background-color: #f8f9fa;
+    }
+
+    .jumbotron {
+      text-align: center;
+      padding: 2rem;
+    }
+
+    .clock {
+      font-size: 4rem;
+      font-weight: bold;
+    }
+
+    .btn-alarm {
+      margin-top: 1rem;
+    }
+    #app {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background-color: #f8f9fa;
+      font-family: Arial, sans-serif;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="app">
+    <div class="jumbotron">
+        <h1 class="display-4">Web Alarm</h1>
+        <p class="lead">This is a simple web alarm</p>
+        <hr class="my-4">
+        <div class="clock"></div>
+        <form>
+        <div class="form-group">
+            <label for="alarmTime">Set Alarm Time:</label>
+            <input type="time" class="form-control" id="alarmTime" required>
+        </div>
+        <button type="submit" class="btn btn-primary" id="setAlarmBtn">Set Alarm</button>
+        <button type="button" class="btn btn-danger btn-alarm d-none" id="stopAlarmBtn">Stop Alarm</button>
+        </form>
+    </div>
+  </div>
+
+  <script>
+    // Register service worker
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/service-worker.js')
+          .then((registration) => {
+            console.log('Service Worker registered:', registration);
+          })
+          .catch((error) => {
+            console.log('Service Worker registration failed:', error);
+          });
+      });
+    }
+
+  </script>
+  <script>
+    const clock = document.querySelector('.clock');
+    const alarmTimeInput = document.querySelector('#alarmTime');
+    const setAlarmBtn = document.querySelector('#setAlarmBtn');
+    const stopAlarmBtn = document.querySelector('#stopAlarmBtn');
+    let alarmInterval;
+
+    // Update the clock every second
+    setInterval(() => {
+      const now = new Date();
+      clock.textContent = now.toLocaleTimeString();
+    }, 1000);
+
+    function setAlarm() {
+      const alarmTime = new Date(alarmTimeInput.value);
+      const currentTime = new Date();
+      const timeDiff = alarmTime.getTime() - currentTime.getTime();
+
+      if (timeDiff <= 0) {
+        alert('Invalid alarm time. Please set a future time.');
+        return;
+      }
+
+      disableAlarmForm();
+      startAlarm(timeDiff);
+    }
+
+    function disableAlarmForm() {
+      alarmTimeInput.disabled = true;
+      setAlarmBtn.disabled = true;
+      setAlarmBtn.classList.add('d-none');
+      stopAlarmBtn.classList.remove('d-none');
+    }
+
+    function startAlarm(timeDiff) {
+      alarmInterval = setTimeout(() => {
+        alert('Alarm!');
+        stopAlarm();
+      }, timeDiff);
+    }
+
+    function stopAlarm() {
+      clearTimeout(alarmInterval);
+      enableAlarmForm();
+    }
+
+    function enableAlarmForm() {
+      alarmTimeInput.disabled = false;
+      setAlarmBtn.disabled = false;
+      setAlarmBtn.classList.remove('d-none');
+      stopAlarmBtn.classList.add('d-none');
+    }
+
+    document.querySelector('form').addEventListener('submit', (e) => {
+      e.preventDefault();
+      setAlarm();
+    });
+
+    stopAlarmBtn.addEventListener('click', stopAlarm);
+  </script>
+</body>
+
+</html>
